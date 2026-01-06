@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Diagnosis Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.active {
+            display: block;
+        }
+        
+        .result-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-section:last-child {
+            border-bottom: none;
+        }
+        
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .status-clean {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status-at_risk {
+            background: #f44336;
+            color: white;
+        }
+        
+        .status-timeout {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .status-error {
+            background: #9e9e9e;
+            color: white;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .info-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item value {
+            display: block;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .vulnerability-list, .error-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .vulnerability-item, .error-item {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .error-item {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error-item.expanded {
+            max-height: none;
+        }
+        
+        .expand-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        
+        .expand-btn:hover {
+            background: #764ba2;
+        }
+        
+        .observation {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-top: 15px;
+        }
+        
+        .observation h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .observation p {
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error-message.active {
+            display: block;
+        }
+        
+        .output-file {
+            background: #d4edda;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            color: #155724;
+            font-size: 0.9em;
+        }
+        
+        .results-list {
+            margin-bottom: 30px;
+        }
+        
+        .results-list h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .result-card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .result-card-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .result-card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .no-results {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Website Diagnosis Tool</h1>
+            <p>Analyze websites for vulnerabilities, performance, and technical issues</p>
+        </div>
+        
+        <div class="results-list">
+            <h2>📋 Saved Results</h2>
+            <button class="refresh-btn" onclick="loadAllResults()">🔄 Refresh List</button>
+            <div id="resultsList">
+                <div class="no-results">Loading saved results...</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="urlInput" placeholder="Enter website URL (e.g., https://example.com)" value="">
+                <button class="btn" id="diagnoseBtn" onclick="diagnoseWebsite()">Diagnose</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing website... This may take a few moments.</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+        
+        <div class="card results" id="results">
+            <div class="result-section">
+                <h3>Overview</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>URL</label>
+                        <value id="url" style="word-break: break-all; font-size: 0.95em;"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Domain</label>
+                        <value id="domain"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Technology</label>
+                        <value id="tech"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Status</label>
+                        <span class="status-badge" id="status"></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Load Time</label>
+                        <value id="loadTime"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>FCP (ms)</label>
+                        <value id="fcpMs"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Console Errors</label>
+                        <value id="errorCount"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Vulnerabilities</label>
+                        <value id="vulnCount"></value>
+                    </div>
+                    <div class="info-item">
+                        <label>Vulnerability Detected</label>
+                        <value id="vulnDetected"></value>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section" id="vulnerabilitiesSection" style="display: none;">
+                <h3>Detected Vulnerabilities</h3>
+                <ul class="vulnerability-list" id="vulnerabilities"></ul>
+            </div>
+            
+            <div class="result-section" id="noVulnerabilitiesSection" style="display: none;">
+                <h3>Detected Vulnerabilities</h3>
+                <p style="color: #666; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                    ✓ No vulnerabilities detected
+                </p>
+            </div>
+            
+            <div class="result-section" id="errorsSection" style="display: none;">
+                <h3>Console Errors</h3>
+                <ul class="error-list" id="errors"></ul>
+            </div>
+            
+            <div class="result-section" id="observationSection" style="display: none;">
+                <div class="observation">
+                    <h4>Technical Observation</h4>
+                    <p id="observation"></p>
+                </div>
+            </div>
+            
+            <div class="output-file" id="outputFile"></div>
+            
+            <div class="result-section">
+                <h3>Raw JSON Data</h3>
+                <button class="btn" onclick="toggleRawJson()" style="margin-bottom: 15px; padding: 10px 20px; font-size: 14px;">Show/Hide Raw JSON</button>
+                <pre id="rawJson" style="display: none; background: #f5f5f5; padding: 20px; border-radius: 8px; overflow-x: auto; max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85em;"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function diagnoseWebsite() {
+            const url = document.getElementById('urlInput').value.trim();
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+            const diagnoseBtn = document.getElementById('diagnoseBtn');
+            
+            if (!url) {
+                showError('Please enter a URL');
+                return;
+            }
+            
+            // Show loading, hide results and errors
+            loading.classList.add('active');
+            results.classList.remove('active');
+            errorMessage.classList.remove('active');
+            diagnoseBtn.disabled = true;
+            
+            // Detect API URL - if accessing via Live Server (port 5500/8000), use Flask server (port 5000)
+            let apiUrl = '/diagnose';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/diagnose';
+                console.log('Detected Live Server, using Flask API at:', apiUrl);
+            }
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 405) {
+                        throw new Error('Method not allowed. Make sure Flask server is running on port 5000.');
+                    } else if (response.status === 0 || response.status >= 500) {
+                        throw new Error('Cannot connect to Flask server. Please start it with: python app.py');
+                    }
+                    return response.json().then(data => {
+                        throw new Error(data.error || `Server error: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                loading.classList.remove('active');
+                diagnoseBtn.disabled = false;
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayResults(data);
+                
+                // Refresh the results list to show the new result
+                loadAllResults();
+            })
+            .catch(error => {
+                loading.classList.remove('active');
+                diagnoseBtn.disabled = false;
+                let errorMsg = error.message;
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMsg = 'Cannot connect to Flask server. Please make sure it\'s running:\n\npython app.py\n\nThen access: http://localhost:5000';
+                }
+                showError(errorMsg);
+            });
+        }
+        
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            results.classList.add('active');
+            
+            // Overview - All fields
+            document.getElementById('url').textContent = data.url || 'N/A';
+            document.getElementById('domain').textContent = data.domain || 'N/A';
+            document.getElementById('tech').textContent = data.tech || 'Unknown';
+            document.getElementById('loadTime').textContent = data.load_time || 'N/A';
+            document.getElementById('fcpMs').textContent = data.first_contentful_paint_ms !== null && data.first_contentful_paint_ms !== undefined 
+                ? data.first_contentful_paint_ms + ' ms' 
+                : 'N/A';
+            document.getElementById('errorCount').textContent = data.console_error_count || 0;
+            document.getElementById('vulnCount').textContent = data.vulnerabilities?.length || 0;
+            document.getElementById('vulnDetected').textContent = data.vulnerability_detected ? 'Yes' : 'No';
+            
+            // Status badge
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = data.status || 'unknown';
+            statusEl.className = 'status-badge status-' + (data.status || 'unknown');
+            
+            // Vulnerabilities
+            const vulnSection = document.getElementById('vulnerabilitiesSection');
+            const noVulnSection = document.getElementById('noVulnerabilitiesSection');
+            const vulnList = document.getElementById('vulnerabilities');
+            if (data.vulnerabilities && data.vulnerabilities.length > 0) {
+                vulnSection.style.display = 'block';
+                noVulnSection.style.display = 'none';
+                vulnList.innerHTML = '';
+                data.vulnerabilities.forEach(vuln => {
+                    const li = document.createElement('li');
+                    li.className = 'vulnerability-item';
+                    const matchedText = vuln.matched_text ? ` <span style="color: #666; font-size: 0.9em;">(${vuln.matched_text.substring(0, 50)}...)</span>` : '';
+                    li.innerHTML = `<strong>${vuln.type}</strong> ${vuln.version ? '(v' + vuln.version + ')' : ''}${matchedText}`;
+                    vulnList.appendChild(li);
+                });
+            } else {
+                vulnSection.style.display = 'none';
+                noVulnSection.style.display = 'block';
+            }
+            
+            // Console Errors
+            const errorSection = document.getElementById('errorsSection');
+            const errorList = document.getElementById('errors');
+            if (data.console_errors && data.console_errors.length > 0) {
+                errorSection.style.display = 'block';
+                errorList.innerHTML = '';
+                data.console_errors.forEach((error, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'error-item';
+                    const isLong = error.length > 200;
+                    li.textContent = isLong ? error.substring(0, 200) + '...' : error;
+                    li.id = `error-${index}`;
+                    
+                    if (isLong) {
+                        const expandBtn = document.createElement('button');
+                        expandBtn.className = 'expand-btn';
+                        expandBtn.textContent = 'Show Full';
+                        expandBtn.onclick = () => {
+                            li.textContent = error;
+                            li.classList.add('expanded');
+                            expandBtn.remove();
+                        };
+                        li.appendChild(expandBtn);
+                    }
+                    
+                    errorList.appendChild(li);
+                });
+            } else {
+                errorSection.style.display = 'none';
+            }
+            
+            // Technical Observation
+            const obsSection = document.getElementById('observationSection');
+            if (data.technical_observation) {
+                obsSection.style.display = 'block';
+                document.getElementById('observation').textContent = data.technical_observation;
+            } else {
+                obsSection.style.display = 'none';
+            }
+            
+            // Output file
+            if (data.output_file) {
+                document.getElementById('outputFile').textContent = 
+                    `📄 Results saved to: results/${data.output_file}`;
+            }
+            
+            // Store raw data for JSON view
+            window.lastDiagnosisData = data;
+            document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+        }
+        
+        function toggleRawJson() {
+            const rawJsonEl = document.getElementById('rawJson');
+            rawJsonEl.style.display = rawJsonEl.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                diagnoseWebsite();
+            }
+        });
+        
+        // Load all saved results on page load
+        function loadAllResults() {
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '<div class="no-results">Loading...</div>';
+            
+            let apiUrl = '/results';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/results';
+            }
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        resultsList.innerHTML = `<div class="no-results">Error: ${data.error}</div>`;
+                        return;
+                    }
+                    
+                    if (!data.results || data.results.length === 0) {
+                        resultsList.innerHTML = '<div class="no-results">No saved results yet. Run a diagnosis to get started!</div>';
+                        return;
+                    }
+                    
+                    resultsList.innerHTML = '';
+                    data.results.forEach(result => {
+                        const card = createResultCard(result);
+                        resultsList.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    resultsList.innerHTML = `<div class="no-results">Error loading results: ${error.message}</div>`;
+                });
+        }
+        
+        function createResultCard(result) {
+            const card = document.createElement('div');
+            card.className = 'result-card';
+            card.onclick = () => viewResult(result.filename);
+            
+            const date = new Date(result.modified * 1000);
+            const dateStr = date.toLocaleString();
+            
+            const statusClass = `status-${result.status}`;
+            const statusColors = {
+                'clean': '#4caf50',
+                'at_risk': '#f44336',
+                'timeout': '#ff9800',
+                'error': '#9e9e9e'
+            };
+            
+            card.innerHTML = `
+                <div class="result-card-header">
+                    <div class="result-card-title">${result.domain || result.url || 'Unknown'}</div>
+                    <span class="status-badge ${statusClass}" style="background: ${statusColors[result.status] || '#9e9e9e'}">
+                        ${result.status || 'unknown'}
+                    </span>
+                </div>
+                <div class="result-card-meta">
+                    <span>🔧 ${result.tech || 'Unknown'}</span>
+                    <span>⏱️ ${result.load_time || 'N/A'}</span>
+                    <span>🐛 ${result.console_error_count || 0} errors</span>
+                    <span>🛡️ ${result.vulnerabilities_count || 0} vulnerabilities</span>
+                    <span>📅 ${dateStr}</span>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function viewResult(filename) {
+            let apiUrl = `/results/${filename}`;
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = `http://localhost:5000/results/${filename}`;
+            }
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    // Scroll to results section
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Display the result
+                    displayResults(data);
+                })
+                .catch(error => {
+                    showError('Error loading result: ' + error.message);
+                });
+        }
+        
+        // Load results on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadAllResults();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+playwright>=1.57.0
+langchain-groq>=0.1.0
+langchain>=0.1.0
+flask>=2.3.0
+flask-cors>=4.0.0
+
