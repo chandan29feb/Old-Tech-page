@@ -45,6 +45,8 @@
             padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             margin-bottom: 20px;
+            display: block !important;
+            visibility: visible !important;
         }
         
         .input-group {
@@ -289,6 +291,17 @@
             font-size: 1.8em;
         }
         
+        .results-list .card {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        .results-list .card button {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
         .result-card {
             background: white;
             border-radius: 10px;
@@ -340,13 +353,30 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             transition: all 0.2s;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .refresh-btn:hover {
             background: #667eea;
             color: white;
+        }
+        
+        .bulk-download-btn {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+            color: white !important;
+            border: none !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .bulk-download-btn:hover {
+            background: linear-gradient(135deg, #138496 0%, #0f6674 100%) !important;
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
         }
         
         .no-results {
@@ -355,6 +385,315 @@
             border-radius: 10px;
             text-align: center;
             color: #666;
+        }
+        
+        .results-controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .controls-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filter-select, .sort-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .filter-select:focus, .sort-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .summary-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .summary-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .summary-stats strong {
+            color: #333;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            padding: 8px 16px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .result-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .action-btn-view {
+            background: #667eea;
+            color: white;
+        }
+        
+        .action-btn-view:hover {
+            background: #764ba2;
+        }
+        
+        .action-btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .action-btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .download-btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .upload-area-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area-text {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .upload-area-hint {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .csv-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .csv-info.active {
+            display: block;
+        }
+        
+        .csv-info h4 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .csv-info p {
+            color: #155724;
+            margin: 5px 0;
+        }
+        
+        .process-bulk-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .process-bulk-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .process-bulk-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .bulk-progress {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+        
+        .bulk-progress.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -365,12 +704,78 @@
             <p>Analyze websites for vulnerabilities, performance, and technical issues</p>
         </div>
         
+        <div class="upload-section">
+            <h2 style="color: #333; margin-bottom: 20px;">📤 Bulk URL Processing</h2>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('csvFileInput').click()">
+                <div class="upload-area-icon">📄</div>
+                <div class="upload-area-text">Click to upload CSV or drag and drop</div>
+                <div class="upload-area-hint">Supports CSV files with URL column (url, URL, website, domain, etc.)</div>
+            </div>
+            <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="handleFileSelect(event)">
+            
+            <div class="csv-info" id="csvInfo">
+                <h4>✅ CSV Uploaded Successfully</h4>
+                <p id="csvInfoText"></p>
+                <button class="process-bulk-btn" id="processBulkBtn" onclick="processBulkUrls()">🚀 Process All URLs</button>
+            </div>
+            
+            <div class="bulk-progress" id="bulkProgress">
+                <h4>Processing URLs...</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                </div>
+                <p id="progressText" style="margin-top: 10px; color: #666;">Preparing...</p>
+            </div>
+        </div>
+        
         <div class="results-list">
             <h2>📋 Saved Results</h2>
-            <button class="refresh-btn" onclick="loadAllResults()">🔄 Refresh List</button>
+            
+            <div class="results-controls">
+                <div class="controls-row">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by domain or technology..." onkeyup="handleSearch()">
+                    <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">All Status</option>
+                        <option value="clean">Clean</option>
+                        <option value="at_risk">At Risk</option>
+                        <option value="timeout">Timeout</option>
+                        <option value="error">Error</option>
+                    </select>
+                    <select id="vulnerabilityFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">All</option>
+                        <option value="yes">With Vulnerabilities</option>
+                        <option value="no">Without Vulnerabilities</option>
+                    </select>
+                    <select id="sortSelect" class="sort-select" onchange="applyFilters()">
+                        <option value="date-desc">Date (Newest First)</option>
+                        <option value="date-asc">Date (Oldest First)</option>
+                        <option value="domain-asc">Domain (A-Z)</option>
+                        <option value="domain-desc">Domain (Z-A)</option>
+                        <option value="vulnerabilities-desc">Most Vulnerabilities</option>
+                        <option value="vulnerabilities-asc">Least Vulnerabilities</option>
+                        <option value="status-asc">Status (A-Z)</option>
+                    </select>
+                </div>
+                <div class="controls-row">
+                    <button class="refresh-btn" onclick="loadAllResults()">🔄 Refresh List</button>
+                    <button class="refresh-btn bulk-download-btn" onclick="downloadAllResultsAsExcel()">
+                        📥 Download All as Excel
+                    </button>
+                    <button class="refresh-btn bulk-download-btn" onclick="downloadFullCompanyList()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;">
+                        📊 Download Full List
+                    </button>
+                    <button class="refresh-btn bulk-download-btn" id="downloadVisibleBtn" onclick="downloadFilteredCompanyList()" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important; display: none;">
+                        📋 Download Visible List
+                    </button>
+                </div>
+                <div id="summaryStats" class="summary-stats" style="display: none;"></div>
+            </div>
+            
             <div id="resultsList">
                 <div class="no-results">Loading saved results...</div>
             </div>
+            
+            <div id="pagination" class="pagination" style="display: none;"></div>
         </div>
         
         <div class="card">
@@ -456,6 +861,15 @@
             
             <div class="output-file" id="outputFile"></div>
             
+            <div class="result-section" id="downloadSection" style="display: none;">
+                <h3>Export Options</h3>
+                <div class="download-btn-group">
+                    <button class="download-btn" onclick="downloadCurrentResultAsExcel()" id="downloadExcelBtn">
+                        📊 Download as Excel
+                    </button>
+                </div>
+            </div>
+            
             <div class="result-section">
                 <h3>Raw JSON Data</h3>
                 <button class="btn" onclick="toggleRawJson()" style="margin-bottom: 15px; padding: 10px 20px; font-size: 14px;">Show/Hide Raw JSON</button>
@@ -539,6 +953,16 @@
         function displayResults(data) {
             const results = document.getElementById('results');
             results.classList.add('active');
+            
+            // Show download section if result has output file
+            const downloadSection = document.getElementById('downloadSection');
+            if (data.output_file) {
+                downloadSection.style.display = 'block';
+                window.currentResultFilename = data.output_file;
+            } else {
+                downloadSection.style.display = 'none';
+                window.currentResultFilename = null;
+            }
             
             // Overview - All fields
             document.getElementById('url').textContent = data.url || 'N/A';
@@ -646,15 +1070,42 @@
             }
         });
         
+        // Current pagination state
+        let currentPage = 1;
+        let currentLimit = 20;
+        let currentSearch = '';
+        let currentStatusFilter = '';
+        let currentVulnerabilityFilter = '';
+        let currentSort = 'date-desc';
+        
         // Load all saved results on page load
-        function loadAllResults() {
+        function loadAllResults(page = 1) {
+            currentPage = page;
             const resultsList = document.getElementById('resultsList');
             resultsList.innerHTML = '<div class="no-results">Loading...</div>';
             
-            let apiUrl = '/results';
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: currentPage.toString(),
+                limit: currentLimit.toString(),
+                sort: currentSort.split('-')[0],
+                order: currentSort.split('-')[1] || 'desc'
+            });
+            
+            if (currentSearch) {
+                params.append('search', currentSearch);
+            }
+            if (currentStatusFilter) {
+                params.append('status', currentStatusFilter);
+            }
+            if (currentVulnerabilityFilter) {
+                params.append('vulnerability', currentVulnerabilityFilter);
+            }
+            
+            let apiUrl = `/results?${params.toString()}`;
             const currentPort = window.location.port;
             if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
-                apiUrl = 'http://localhost:5000/results';
+                apiUrl = `http://localhost:5000/results?${params.toString()}`;
             }
             
             fetch(apiUrl)
@@ -665,8 +1116,18 @@
                         return;
                     }
                     
+                    // Display summary statistics
+                    if (data.statistics) {
+                        displaySummaryStats(data.statistics, data.pagination);
+                    }
+                    
+                    // Display pagination
+                    if (data.pagination) {
+                        displayPagination(data.pagination);
+                    }
+                    
                     if (!data.results || data.results.length === 0) {
-                        resultsList.innerHTML = '<div class="no-results">No saved results yet. Run a diagnosis to get started!</div>';
+                        resultsList.innerHTML = '<div class="no-results">No results found. Try adjusting your search or filters.</div>';
                         return;
                     }
                     
@@ -681,10 +1142,79 @@
                 });
         }
         
+        function displaySummaryStats(stats, pagination) {
+            const summaryDiv = document.getElementById('summaryStats');
+            if (!summaryDiv) return;
+            
+            const showing = pagination ? `Showing ${((currentPage - 1) * currentLimit) + 1}-${Math.min(currentPage * currentLimit, pagination.total)}` : '';
+            const total = pagination ? `of ${pagination.total}` : '';
+            
+            summaryDiv.innerHTML = `
+                <span>${showing} ${total} companies</span>
+                <span>|</span>
+                <span><strong style="color: #dc3545;">${stats.with_vulnerabilities}</strong> with vulnerabilities</span>
+                <span>|</span>
+                <span><strong style="color: #28a745;">${stats.without_vulnerabilities}</strong> without vulnerabilities</span>
+                <span>|</span>
+                <span>Avg load: <strong>${stats.avg_load_time}</strong></span>
+            `;
+            summaryDiv.style.display = 'flex';
+            
+            // Update "Download Visible List" button
+            const downloadVisibleBtn = document.getElementById('downloadVisibleBtn');
+            if (downloadVisibleBtn && pagination) {
+                const hasFilters = currentSearch || currentStatusFilter || currentVulnerabilityFilter;
+                if (hasFilters && pagination.total > 0) {
+                    downloadVisibleBtn.textContent = `📋 Download Visible List (${pagination.total} companies)`;
+                    downloadVisibleBtn.style.display = 'inline-block';
+                } else {
+                    downloadVisibleBtn.style.display = 'none';
+                }
+            }
+        }
+        
+        function displayPagination(pagination) {
+            const paginationDiv = document.getElementById('pagination');
+            if (!paginationDiv || pagination.total_pages <= 1) {
+                if (paginationDiv) paginationDiv.style.display = 'none';
+                return;
+            }
+            
+            paginationDiv.style.display = 'flex';
+            
+            let html = `
+                <button class="pagination-btn" onclick="loadAllResults(1)" ${currentPage === 1 ? 'disabled' : ''}>First</button>
+                <button class="pagination-btn" onclick="loadAllResults(${currentPage - 1})" ${!pagination.has_prev ? 'disabled' : ''}>Previous</button>
+                <span class="pagination-info">Page ${currentPage} of ${pagination.total_pages}</span>
+                <button class="pagination-btn" onclick="loadAllResults(${currentPage + 1})" ${!pagination.has_next ? 'disabled' : ''}>Next</button>
+                <button class="pagination-btn" onclick="loadAllResults(${pagination.total_pages})" ${currentPage === pagination.total_pages ? 'disabled' : ''}>Last</button>
+            `;
+            
+            paginationDiv.innerHTML = html;
+        }
+        
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            currentSearch = searchInput.value.trim();
+            currentPage = 1; // Reset to first page on new search
+            loadAllResults(currentPage);
+        }
+        
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter');
+            const vulnerabilityFilter = document.getElementById('vulnerabilityFilter');
+            const sortSelect = document.getElementById('sortSelect');
+            
+            currentStatusFilter = statusFilter.value;
+            currentVulnerabilityFilter = vulnerabilityFilter.value;
+            currentSort = sortSelect.value;
+            currentPage = 1; // Reset to first page on filter change
+            loadAllResults(currentPage);
+        }
+        
         function createResultCard(result) {
             const card = document.createElement('div');
             card.className = 'result-card';
-            card.onclick = () => viewResult(result.filename);
             
             const date = new Date(result.modified * 1000);
             const dateStr = date.toLocaleString();
@@ -697,12 +1227,23 @@
                 'error': '#9e9e9e'
             };
             
+            const domain = result.domain || result.url || 'Unknown';
+            const vulnBadge = result.vulnerability_detected 
+                ? `<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 600;">⚠️ ${result.vulnerabilities_count} Vulnerabilities</span>`
+                : `<span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 600;">✓ Secure</span>`;
+            
             card.innerHTML = `
                 <div class="result-card-header">
-                    <div class="result-card-title">${result.domain || result.url || 'Unknown'}</div>
-                    <span class="status-badge ${statusClass}" style="background: ${statusColors[result.status] || '#9e9e9e'}">
+                    <div>
+                        <div class="result-card-title" style="font-size: 1.3em; margin-bottom: 5px;">${domain}</div>
+                        <div style="font-size: 0.85em; color: #666;">${result.url || ''}</div>
+                    </div>
+                    <span class="status-badge ${statusClass}" style="background: ${statusColors[result.status] || '#9e9e9e'}; white-space: nowrap;">
                         ${result.status || 'unknown'}
                     </span>
+                </div>
+                <div style="margin: 15px 0;">
+                    ${vulnBadge}
                 </div>
                 <div class="result-card-meta">
                     <span>🔧 ${result.tech || 'Unknown'}</span>
@@ -711,9 +1252,48 @@
                     <span>🛡️ ${result.vulnerabilities_count || 0} vulnerabilities</span>
                     <span>📅 ${dateStr}</span>
                 </div>
+                <div class="result-card-actions">
+                    <button class="action-btn action-btn-view" onclick="event.stopPropagation(); viewResult('${result.filename}')">👁️ View Details</button>
+                    <button class="action-btn action-btn-delete" onclick="event.stopPropagation(); deleteResult('${result.filename}')">🗑️ Delete</button>
+                </div>
             `;
             
+            // Make card clickable (but not when clicking buttons)
+            card.onclick = (e) => {
+                if (!e.target.closest('.result-card-actions')) {
+                    viewResult(result.filename);
+                }
+            };
+            
             return card;
+        }
+        
+        function deleteResult(filename) {
+            if (!confirm('Are you sure you want to delete this result?')) {
+                return;
+            }
+            
+            let apiUrl = `/results/${filename}`;
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = `http://localhost:5000/results/${filename}`;
+            }
+            
+            fetch(apiUrl, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadAllResults(currentPage); // Reload current page
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Delete failed');
+                    });
+                }
+            })
+            .catch(error => {
+                showError('Failed to delete result: ' + error.message);
+            });
         }
         
         function viewResult(filename) {
@@ -742,9 +1322,459 @@
                 });
         }
         
+        function downloadCurrentResultAsExcel() {
+            if (!window.currentResultFilename) {
+                showError('No result available to download');
+                return;
+            }
+            
+            const downloadBtn = document.getElementById('downloadExcelBtn');
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ Generating Excel...';
+            
+            let apiUrl = `/export/excel/${window.currentResultFilename}`;
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = `http://localhost:5000/export/excel/${window.currentResultFilename}`;
+            }
+            
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Download failed');
+                        });
+                    }
+                    // Get filename from Content-Disposition header or use default
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = `diagnosis_${window.currentResultFilename.replace('.json', '.xlsx')}`;
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = '📊 Download as Excel';
+                })
+                .catch(error => {
+                    downloadBtn.disabled = false;
+                    downloadBtn.textContent = '📊 Download as Excel';
+                    showError('Failed to download Excel: ' + error.message);
+                });
+        }
+        
+        function downloadAllResultsAsExcel() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating Excel...';
+            
+            let apiUrl = '/export/excel/bulk';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/export/excel/bulk';
+            }
+            
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Download failed');
+                        });
+                    }
+                    // Get filename from Content-Disposition header or use default
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = `bulk_diagnosis_results_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                })
+                .catch(error => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    showError('Failed to download Excel: ' + error.message);
+                });
+        }
+        
+        function downloadFullCompanyList() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating Excel...';
+            
+            let apiUrl = '/download-excel/all';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/download-excel/all';
+            }
+            
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Download failed');
+                        });
+                    }
+                    // Get filename from Content-Disposition header or use default
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = `company_diagnosis_export_${new Date().toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_')}.xlsx`;
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                })
+                .catch(error => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    showError('Failed to download Excel: ' + error.message);
+                });
+        }
+        
+        function downloadFilteredCompanyList() {
+            const btn = document.getElementById('downloadVisibleBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating Excel...';
+            
+            // Prepare filter data
+            const filterData = {
+                search: currentSearch,
+                status: currentStatusFilter,
+                vulnerability: currentVulnerabilityFilter
+            };
+            
+            let apiUrl = '/download-excel/filtered';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/download-excel/filtered';
+            }
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filterData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Download failed');
+                        });
+                    }
+                    // Get filename from Content-Disposition header or use default
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = `company_diagnosis_filtered_${new Date().toISOString().slice(0, 19).replace(/:/g, '-').replace('T', '_')}.xlsx`;
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    return response.blob().then(blob => ({ blob, filename }));
+                })
+                .then(({ blob, filename }) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                })
+                .catch(error => {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    showError('Failed to download Excel: ' + error.message);
+                });
+        }
+        
+        // CSV Upload Variables
+        let uploadedCsvData = null;
+        
+        function initializeDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            if (!uploadArea) return;
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].name.toLowerCase().endsWith('.csv')) {
+                    handleFileUpload(files[0]);
+                } else {
+                    showError('Please drop a CSV file');
+                }
+            });
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+            }
+        }
+        
+        function handleFileUpload(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showError('Please select a CSV file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            let apiUrl = '/upload-csv';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/upload-csv';
+            }
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                if (data.success) {
+                    uploadedCsvData = data.data;
+                    displayCsvInfo(data.data, data.message);
+                } else {
+                    showError('Upload failed');
+                }
+            })
+            .catch(error => {
+                showError('Failed to upload CSV: ' + error.message);
+            });
+        }
+        
+        function displayCsvInfo(data, message) {
+            const csvInfo = document.getElementById('csvInfo');
+            const csvInfoText = document.getElementById('csvInfoText');
+            
+            csvInfoText.textContent = message;
+            csvInfo.classList.add('active');
+        }
+        
+        let currentJobId = null;
+        let progressInterval = null;
+        
+        function processBulkUrls() {
+            if (!uploadedCsvData || !uploadedCsvData.urls || uploadedCsvData.urls.length === 0) {
+                showError('No URLs to process');
+                return;
+            }
+            
+            const processBtn = document.getElementById('processBulkBtn');
+            const bulkProgress = document.getElementById('bulkProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            processBtn.disabled = true;
+            bulkProgress.classList.add('active');
+            progressFill.style.width = '0%';
+            progressFill.textContent = '0%';
+            progressText.textContent = 'Starting bulk processing...';
+            
+            let apiUrl = '/process-bulk-urls';
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = 'http://localhost:5000/process-bulk-urls';
+            }
+            
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    urls: uploadedCsvData.urls,
+                    generate_observations: false
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                    processBtn.disabled = false;
+                    bulkProgress.classList.remove('active');
+                    return;
+                }
+                
+                if (data.success && data.job_id) {
+                    currentJobId = data.job_id;
+                    // Start polling for progress
+                    pollJobStatus(data.job_id);
+                } else {
+                    showError('Failed to start bulk processing');
+                    processBtn.disabled = false;
+                    bulkProgress.classList.remove('active');
+                }
+            })
+            .catch(error => {
+                showError('Failed to process URLs: ' + error.message);
+                processBtn.disabled = false;
+                bulkProgress.classList.remove('active');
+            });
+        }
+        
+        function pollJobStatus(jobId) {
+            // Clear any existing interval
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            
+            let apiUrl = `/bulk-status/${jobId}`;
+            const currentPort = window.location.port;
+            if (currentPort === '5500' || currentPort === '8000' || currentPort === '3000') {
+                apiUrl = `http://localhost:5000/bulk-status/${jobId}`;
+            }
+            
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const processBtn = document.getElementById('processBulkBtn');
+            const bulkProgress = document.getElementById('bulkProgress');
+            
+            // Poll every 1 second
+            progressInterval = setInterval(() => {
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(status => {
+                        if (status.error) {
+                            clearInterval(progressInterval);
+                            showError(status.error);
+                            processBtn.disabled = false;
+                            bulkProgress.classList.remove('active');
+                            return;
+                        }
+                        
+                        // Update progress bar
+                        const percent = status.progress_percent || 0;
+                        progressFill.style.width = percent + '%';
+                        progressFill.textContent = percent + '%';
+                        
+                        // Update progress text
+                        if (status.status === 'processing') {
+                            const currentUrl = status.current_url || 'Processing...';
+                            progressText.innerHTML = `Processing <strong>${status.completed}</strong> of <strong>${status.total}</strong>: <span style="color: #667eea;">${currentUrl}</span>`;
+                        } else if (status.status === 'completed') {
+                            clearInterval(progressInterval);
+                            progressFill.style.width = '100%';
+                            progressFill.textContent = '100%';
+                            
+                            const successCount = status.successful || 0;
+                            const failedCount = status.failed || 0;
+                            const total = status.total || 0;
+                            
+                            if (failedCount > 0) {
+                                progressText.innerHTML = `✅ Processed <strong>${total}</strong> URLs: <strong style="color: #28a745;">${successCount} successful</strong>, <strong style="color: #dc3545;">${failedCount} failed</strong>`;
+                                
+                                // Show error details if any
+                                if (status.errors && status.errors.length > 0) {
+                                    const errorDetails = status.errors.map(e => `• ${e.url}: ${e.error}`).join('<br>');
+                                    progressText.innerHTML += `<br><br><strong>Errors:</strong><br><div style="margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px; font-size: 0.9em; text-align: left;">${errorDetails}</div>`;
+                                }
+                            } else {
+                                progressText.innerHTML = `✅ Successfully processed <strong>${total}</strong> URLs!`;
+                            }
+                            
+                            // Refresh results list
+                            setTimeout(() => {
+                                loadAllResults();
+                                processBtn.disabled = false;
+                                uploadedCsvData = null;
+                                document.getElementById('csvInfo').classList.remove('active');
+                                document.getElementById('csvFileInput').value = '';
+                                
+                                // Auto-hide progress after 5 seconds
+                                setTimeout(() => {
+                                    bulkProgress.classList.remove('active');
+                                }, 5000);
+                            }, 1000);
+                        } else if (status.status === 'failed') {
+                            clearInterval(progressInterval);
+                            showError('Bulk processing failed');
+                            processBtn.disabled = false;
+                            bulkProgress.classList.remove('active');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error polling job status:', error);
+                        // Continue polling even on error
+                    });
+            }, 1000);
+        }
+        
         // Load results on page load
         window.addEventListener('DOMContentLoaded', function() {
             loadAllResults();
+            initializeDragAndDrop();
         });
     </script>
 </body>

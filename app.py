@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
 import json
 import os
-from diagnose_website import diagnose_site, generate_technical_observation
+from diagnose_website import diagnose_site, generate_technical_observation, diagnose_multiple_sites
 from urllib.parse import urlparse
+from excel_export import export_single_result_to_excel, export_bulk_results_to_excel, export_company_list_to_excel
+from csv_parser import validate_csv_file
+from werkzeug.utils import secure_filename
+from bulk_processor import bulk_processor
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS to allow requests from different ports/origins
@@ -98,12 +102,23 @@ def diagnose():
 
 @app.route('/results', methods=['GET'])
 def list_results():
-    """List all saved diagnosis results."""
+    """List all saved diagnosis results with pagination, search, filter, and sort."""
     try:
         results_dir = 'results'
         os.makedirs(results_dir, exist_ok=True)
         
+        # Get query parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 20))
+        search = request.args.get('search', '').strip().lower()
+        status_filter = request.args.get('status', '').strip()
+        vulnerability_filter = request.args.get('vulnerability', '').strip()
+        sort_by = request.args.get('sort', 'date')  # date, domain, status, vulnerabilities
+        sort_order = request.args.get('order', 'desc')  # asc, desc
+        
         files = []
+        load_times = []
+        
         for filename in os.listdir(results_dir):
             if filename.endswith('.json'):
                 filepath = os.path.join(results_dir, filename)
@@ -115,28 +130,96 @@ def list_results():
                     with open(filepath, 'r') as f:
                         data = json.load(f)
                     
+                    domain = data.get('domain', '')
+                    tech = data.get('tech', 'Unknown')
+                    status = data.get('status', 'unknown')
+                    load_time = data.get('load_time', 'N/A')
+                    vulnerability_detected = data.get('vulnerability_detected', False)
+                    vulnerabilities_count = len(data.get('vulnerabilities', []))
+                    
+                    # Collect load times for statistics (only numeric values)
+                    if load_time != 'N/A':
+                        try:
+                            # Extract numeric value from load_time (e.g., "2.3s" -> 2.3)
+                            load_time_num = float(load_time.replace('s', '').strip())
+                            load_times.append(load_time_num)
+                        except:
+                            pass
+                    
                     files.append({
                         'filename': filename,
                         'url': data.get('url', ''),
-                        'domain': data.get('domain', ''),
-                        'tech': data.get('tech', 'Unknown'),
-                        'status': data.get('status', 'unknown'),
-                        'load_time': data.get('load_time', 'N/A'),
+                        'domain': domain,
+                        'tech': tech,
+                        'status': status,
+                        'load_time': load_time,
                         'console_error_count': data.get('console_error_count', 0),
-                        'vulnerability_detected': data.get('vulnerability_detected', False),
-                        'vulnerabilities_count': len(data.get('vulnerabilities', [])),
+                        'vulnerability_detected': vulnerability_detected,
+                        'vulnerabilities_count': vulnerabilities_count,
                         'modified': stat.st_mtime
                     })
                 except Exception as e:
                     # Skip corrupted files
                     continue
         
-        # Sort by modified time (newest first)
-        files.sort(key=lambda x: x['modified'], reverse=True)
+        # Apply search filter
+        if search:
+            files = [f for f in files if search in f['domain'].lower() or search in f['tech'].lower()]
         
-        return jsonify({'results': files})
+        # Apply status filter
+        if status_filter:
+            files = [f for f in files if f['status'] == status_filter]
+        
+        # Apply vulnerability filter
+        if vulnerability_filter == 'yes':
+            files = [f for f in files if f['vulnerability_detected']]
+        elif vulnerability_filter == 'no':
+            files = [f for f in files if not f['vulnerability_detected']]
+        
+        # Apply sorting
+        if sort_by == 'date':
+            files.sort(key=lambda x: x['modified'], reverse=(sort_order == 'desc'))
+        elif sort_by == 'domain':
+            files.sort(key=lambda x: x['domain'].lower(), reverse=(sort_order == 'desc'))
+        elif sort_by == 'status':
+            files.sort(key=lambda x: x['status'], reverse=(sort_order == 'desc'))
+        elif sort_by == 'vulnerabilities':
+            files.sort(key=lambda x: x['vulnerabilities_count'], reverse=(sort_order == 'desc'))
+        
+        # Calculate statistics
+        total_count = len(files)
+        with_vulnerabilities = sum(1 for f in files if f['vulnerability_detected'])
+        without_vulnerabilities = total_count - with_vulnerabilities
+        avg_load_time = sum(load_times) / len(load_times) if load_times else 0
+        
+        # Apply pagination
+        total_pages = (total_count + limit - 1) // limit  # Ceiling division
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        paginated_files = files[start_idx:end_idx]
+        
+        return jsonify({
+            'results': paginated_files,
+            'pagination': {
+                'page': page,
+                'limit': limit,
+                'total': total_count,
+                'total_pages': total_pages,
+                'has_next': page < total_pages,
+                'has_prev': page > 1
+            },
+            'statistics': {
+                'total': total_count,
+                'with_vulnerabilities': with_vulnerabilities,
+                'without_vulnerabilities': without_vulnerabilities,
+                'avg_load_time': f"{avg_load_time:.1f}s" if avg_load_time > 0 else "N/A"
+            }
+        })
     
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Results list error: {error_trace}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -161,6 +244,361 @@ def get_result(filename):
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/results/<filename>', methods=['DELETE'])
+def delete_result(filename):
+    """Delete a specific diagnosis result."""
+    try:
+        # Security: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        filepath = os.path.join('results', filename)
+        
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Result not found'}), 404
+        
+        os.remove(filepath)
+        return jsonify({'success': True, 'message': 'Result deleted successfully'})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/export/excel/<filename>', methods=['GET'])
+def export_result_to_excel(filename):
+    """Export a single diagnosis result to Excel format."""
+    try:
+        # Security: prevent directory traversal
+        if '..' in filename or '/' in filename or '\\' in filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+        
+        json_filepath = os.path.join('results', filename)
+        
+        if not os.path.exists(json_filepath):
+            return jsonify({'error': 'Result not found'}), 404
+        
+        # Read JSON data
+        with open(json_filepath, 'r') as f:
+            result_data = json.load(f)
+        
+        # Export to Excel
+        excel_path = export_single_result_to_excel(result_data)
+        
+        # Generate download filename
+        domain = result_data.get('domain', 'unknown')
+        safe_domain = domain.replace('.', '_').replace('/', '_')[:30]
+        download_filename = f"diagnosis_{safe_domain}.xlsx"
+        
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=download_filename
+        )
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Excel export error: {error_trace}")
+        return jsonify({'error': f'Excel export failed: {str(e)}'}), 500
+
+
+@app.route('/export/excel/bulk', methods=['GET'])
+def export_all_results_to_excel():
+    """Export all saved diagnosis results to a single Excel file."""
+    try:
+        results_dir = 'results'
+        os.makedirs(results_dir, exist_ok=True)
+        
+        # Collect all JSON results
+        results_list = []
+        for filename in os.listdir(results_dir):
+            if filename.endswith('.json'):
+                filepath = os.path.join(results_dir, filename)
+                try:
+                    with open(filepath, 'r') as f:
+                        data = json.load(f)
+                        results_list.append(data)
+                except Exception as e:
+                    # Skip corrupted files
+                    continue
+        
+        if not results_list:
+            return jsonify({'error': 'No results found to export'}), 404
+        
+        # Export to Excel
+        excel_path = export_bulk_results_to_excel(results_list)
+        
+        # Generate download filename
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        download_filename = f"bulk_diagnosis_results_{timestamp}.xlsx"
+        
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=download_filename
+        )
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Bulk Excel export error: {error_trace}")
+        return jsonify({'error': f'Bulk Excel export failed: {str(e)}'}), 500
+
+
+@app.route('/download-excel/all', methods=['GET'])
+def download_full_company_list():
+    """Export all company diagnosis results to Excel with complete details."""
+    try:
+        results_dir = 'results'
+        os.makedirs(results_dir, exist_ok=True)
+        
+        # Collect all JSON results with full data
+        results_list = []
+        for filename in os.listdir(results_dir):
+            if filename.endswith('.json'):
+                filepath = os.path.join(results_dir, filename)
+                try:
+                    stat = os.stat(filepath)
+                    with open(filepath, 'r') as f:
+                        data = json.load(f)
+                    # Add modified timestamp for date formatting
+                    data['modified'] = stat.st_mtime
+                    results_list.append(data)
+                except Exception as e:
+                    # Skip corrupted files
+                    continue
+        
+        if not results_list:
+            return jsonify({'error': 'No results found to export'}), 404
+        
+        # Export to Excel using the new function
+        excel_path = export_company_list_to_excel(results_list)
+        
+        # Generate download filename with proper naming convention
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        download_filename = f"company_diagnosis_export_{timestamp}.xlsx"
+        
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=download_filename
+        )
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Full company list export error: {error_trace}")
+        return jsonify({'error': f'Excel export failed: {str(e)}'}), 500
+
+
+@app.route('/download-excel/filtered', methods=['POST'])
+def download_filtered_company_list():
+    """Export filtered company diagnosis results to Excel with complete details."""
+    try:
+        data = request.get_json() or {}
+        
+        # Get filter parameters from request
+        search = data.get('search', '').strip().lower()
+        status_filter = data.get('status', '').strip()
+        vulnerability_filter = data.get('vulnerability', '').strip()
+        
+        results_dir = 'results'
+        os.makedirs(results_dir, exist_ok=True)
+        
+        # Collect all JSON results with full data
+        all_results = []
+        for filename in os.listdir(results_dir):
+            if filename.endswith('.json'):
+                filepath = os.path.join(results_dir, filename)
+                try:
+                    stat = os.stat(filepath)
+                    with open(filepath, 'r') as f:
+                        result_data = json.load(f)
+                    # Add modified timestamp for date formatting
+                    result_data['modified'] = stat.st_mtime
+                    all_results.append(result_data)
+                except Exception as e:
+                    # Skip corrupted files
+                    continue
+        
+        if not all_results:
+            return jsonify({'error': 'No results found to export'}), 404
+        
+        # Apply filters (same logic as /results endpoint)
+        filtered_results = []
+        
+        for result in all_results:
+            domain = result.get('domain', '').lower()
+            tech = result.get('tech', 'Unknown').lower()
+            status = result.get('status', 'unknown')
+            vulnerability_detected = result.get('vulnerability_detected', False)
+            
+            # Apply search filter
+            if search:
+                if search not in domain and search not in tech:
+                    continue
+            
+            # Apply status filter
+            if status_filter:
+                if status != status_filter:
+                    continue
+            
+            # Apply vulnerability filter
+            if vulnerability_filter == 'yes':
+                if not vulnerability_detected:
+                    continue
+            elif vulnerability_filter == 'no':
+                if vulnerability_detected:
+                    continue
+            
+            filtered_results.append(result)
+        
+        if not filtered_results:
+            return jsonify({'error': 'No results match the current filters'}), 404
+        
+        # Export to Excel using the company list export function
+        excel_path = export_company_list_to_excel(filtered_results)
+        
+        # Generate download filename with proper naming convention
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        download_filename = f"company_diagnosis_filtered_{timestamp}.xlsx"
+        
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=download_filename
+        )
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Filtered company list export error: {error_trace}")
+        return jsonify({'error': f'Excel export failed: {str(e)}'}), 500
+
+
+@app.route('/upload-csv', methods=['POST'])
+def upload_csv():
+    """Handle CSV file upload and parse URLs."""
+    try:
+        # Check if file is present
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        
+        # Check if file is selected
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Check file extension
+        if not file.filename.lower().endswith('.csv'):
+            return jsonify({'error': 'Invalid file type. Please upload a CSV file.'}), 400
+        
+        # Read file content
+        file_content = file.read()
+        
+        if not file_content:
+            return jsonify({'error': 'File is empty'}), 400
+        
+        # Validate and parse CSV
+        is_valid, error_message, data = validate_csv_file(file_content, secure_filename(file.filename))
+        
+        if not is_valid:
+            return jsonify({'error': error_message}), 400
+        
+        # Return parsed data
+        return jsonify({
+            'success': True,
+            'message': f'CSV uploaded successfully: {data["metadata"]["filename"]} ({data["metadata"]["url_count"]} URLs found)',
+            'data': data
+        })
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"CSV upload error: {error_trace}")
+        return jsonify({
+            'error': f'CSV upload failed: {str(e)}',
+            'details': error_trace if os.environ.get('FLASK_DEBUG') else None
+        }), 500
+
+
+@app.route('/process-bulk-urls', methods=['POST'])
+def process_bulk_urls():
+    """Start bulk processing job for multiple URLs from uploaded CSV."""
+    try:
+        data = request.get_json()
+        urls = data.get('urls', [])
+        
+        if not urls:
+            return jsonify({'error': 'No URLs provided'}), 400
+        
+        if not isinstance(urls, list):
+            return jsonify({'error': 'URLs must be a list'}), 400
+        
+        if len(urls) > 100:  # Limit to prevent abuse
+            return jsonify({'error': 'Maximum 100 URLs allowed per bulk processing'}), 400
+        
+        # Create background job
+        generate_observations = data.get('generate_observations', False)
+        job_id = bulk_processor.create_job(urls, generate_observations)
+        
+        return jsonify({
+            'success': True,
+            'job_id': job_id,
+            'message': f'Bulk processing started for {len(urls)} URLs',
+            'total_urls': len(urls)
+        })
+    
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Bulk processing error: {error_trace}")
+        return jsonify({
+            'error': f'Bulk processing failed: {str(e)}',
+            'details': error_trace if os.environ.get('FLASK_DEBUG') else None
+        }), 500
+
+
+@app.route('/bulk-status/<job_id>', methods=['GET'])
+def get_bulk_status(job_id):
+    """Get status of a bulk processing job."""
+    try:
+        job = bulk_processor.get_job_status(job_id)
+        
+        if not job:
+            return jsonify({'error': 'Job not found'}), 404
+        
+        # Calculate progress percentage
+        progress_percent = 0
+        if job['total'] > 0:
+            progress_percent = int((job['completed'] / job['total']) * 100)
+        
+        return jsonify({
+            'job_id': job_id,
+            'status': job['status'],
+            'total': job['total'],
+            'completed': job['completed'],
+            'successful': job['successful'],
+            'failed': job['failed'],
+            'progress_percent': progress_percent,
+            'current_url': job.get('current_url'),
+            'started_at': job['started_at'],
+            'completed_at': job.get('completed_at'),
+            'errors': job.get('errors', [])
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to get job status: {str(e)}'}), 500
 
 
 if __name__ == '__main__':
